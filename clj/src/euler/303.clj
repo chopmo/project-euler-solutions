@@ -1,6 +1,8 @@
-(ns euler.problem303)
+(ns euler.problem-303)
 
-(defn multi [x sum] (lazy-seq (cons (+ sum x) (multi x (+ sum x)))))
+(defn multi
+  ([x] (multi x 0))
+  ([x sum] (lazy-seq (cons (+ sum x) (multi x (+ sum x))))))
 
 (defn digits [i]
   (if (< i 10)
