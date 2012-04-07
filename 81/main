@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby -W
+$LOAD_PATH.unshift("lib")
+
+require 'solver'
+
+puts Solver.solve(open(ARGV[0]).read)
