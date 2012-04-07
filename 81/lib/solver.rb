@@ -1,51 +1,51 @@
 class Solver
+  Node = Struct.new(:row, :col, :val, :dist)
+
   def self.solve(input)
     new(input).result
   end
 
   def initialize(input)
-    @cells = input.lines.map { |line| line.split(/,/).map(&:strip).map(&:to_i) }
-    @best_trail = nil
+    @cells = []
+    input.lines.each_with_index do |line, row_idx|
+      row = []
+      line.split(/,/).each_with_index do |num_string, col_idx|
+        number = num_string.strip.to_i
+        row << Node.new(row_idx, col_idx, number, 1_000_000)
+      end
+      @cells << row
+    end
+    
+    @current = @cells[0][0]
+    @current.dist = @current.val
+
+    @unvisited = @cells.flatten
+    @unvisited.delete(@current)
   end
 
-  attr_reader :cells
+  attr_reader :cells, :unvisited
 
+  def neighbours(n)
+    res = []
+    res << cells[n.row + 1][n.col] if n.row < last_row
+    res << cells[n.row][n.col + 1] if n.col < last_col
+    res
+  end
+  
   def result
-    find_best_trail(0, 0)
-    trail_sum(@best_trail)
+    visit_nodes
+    last_node = cells.last.last
+    last_node.dist
   end
 
-  def find_best_trail(r, c, trail = [])
-    trail << val(r, c)
-    if r == last_row
-      if c == last_col
-        update_best_trail(trail)
-      else
-        find_best_trail(r, c + 1, trail.dup)
+  def visit_nodes
+    while @current
+      neighbours(@current).each do |n|
+        n.dist = [n.dist, @current.dist + n.val].min
       end
-    else
-      # not the last row
-      if c == last_col
-        find_best_trail(r + 1, c, trail.dup)
-      else
-        find_best_trail(r, c + 1, trail.dup)
-        find_best_trail(r + 1, c, trail.dup)
-      end
+      unvisited.delete(@current)
+      @current = unvisited.first
     end
-  end
-
-  def update_best_trail(trail)
-    if @best_trail.nil? || trail_sum(trail) < trail_sum(@best_trail)
-      @best_trail = trail
-    end
-  end
-
-  def trail_sum(trail)
-    trail.inject(&:+) || 0
-  end
-
-  def val(row, col)
-    cells[row][col]
   end
   
   def last_row
